@@ -63,3 +63,4 @@ Server/class_indices.json
 Server/flower_classification_model_big.keras
 Server/config.py
 Server/.env
+Server/myenv
