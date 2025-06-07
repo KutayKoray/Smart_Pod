@@ -2,30 +2,19 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from models import Device, SensorData, ChatHistory
 from database import SessionLocal
-import openai
+from openai import OpenAI
 import os
 from dotenv import load_dotenv
 
 load_dotenv()
 
-openai.api_key = os.getenv("OPEN_AI_KEY")
+client = OpenAI(api_key=(os.getenv("OPEN_AI_KEY") or ""))
 
 def avg(values):
     return round(sum(values) / len(values), 2) if values else 0
 
 def extract_light_by_hour_range(data, start_hour, end_hour):
     return [s.light for s in data if s.timestamp and start_hour <= s.timestamp.hour <= end_hour]
-
-def get_recent_chat(serial_number: str, db: Session, limit: int = 5) -> list:
-    messages = db.query(ChatHistory)\
-        .filter(ChatHistory.serial_number == serial_number)\
-        .order_by(ChatHistory.timestamp.desc())\
-        .limit(limit)\
-        .all()
-    return [
-        {"role": m.role, "content": m.content}
-        for m in reversed(messages)
-    ]
 
 def generate_suggestions(serial_number: str) -> dict:
     db: Session = SessionLocal()
@@ -105,7 +94,7 @@ Bu verileri bitkinin türünü dikkate alarak değerlendir. Kullanıcıya:
     messages += get_recent_chat(serial_number, db)
     messages.append({"role": "user", "content": prompt})
 
-    response = openai.ChatCompletion.create(
+    response = client.chat.completions.create(
         model="gpt-4",
         messages=messages
     )
