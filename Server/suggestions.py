@@ -16,6 +16,17 @@ def avg(values):
 def extract_light_by_hour_range(data, start_hour, end_hour):
     return [s.light for s in data if s.timestamp and start_hour <= s.timestamp.hour <= end_hour]
 
+def get_recent_chat(serial_number: str, db: Session, limit: int = 5) -> list:
+    messages = db.query(ChatHistory)\
+        .filter(ChatHistory.serial_number == serial_number)\
+        .order_by(ChatHistory.timestamp.desc())\
+        .limit(limit)\
+        .all()
+    return [
+        {"role": m.role, "content": m.content}
+        for m in reversed(messages)
+    ]
+
 def generate_suggestions(serial_number: str) -> dict:
     db: Session = SessionLocal()
 
