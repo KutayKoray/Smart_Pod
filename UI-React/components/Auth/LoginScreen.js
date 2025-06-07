@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
-import { saveUserSession, savePotSession } from '../../utils/session';
+import { saveUserSession, savePotSession, getPotSession } from '../../utils/session';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -23,6 +23,24 @@ export default function LoginScreen({ navigation }) {
         if (profileRes.ok) {
           const userProfile = await profileRes.json();
           await saveUserSession(userProfile);
+          try {
+            let serial = '';
+            try {
+              const potSession = await getPotSession();
+              serial = potSession?.serial || '';
+            } catch (e) {}
+            const deviceIdRes = await fetch('http://213.14.135.179:11111/get-device-id', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email }),
+            });
+            if (deviceIdRes.ok) {
+              const { device_id } = await deviceIdRes.json();
+              await savePotSession({ serial, device_id });
+            }
+          } catch (err) {
+            console.log("get-device-id catch:", err);
+          }
           navigation.replace('MainTabs');
         } else {
           Alert.alert('Hata', 'Profil bilgileri alınamadı.');

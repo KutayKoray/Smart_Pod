@@ -134,15 +134,28 @@ export default function BilgilerScreen({ navigation }) {
     <SafeAreaView style={styles.safeContainer}>
       <Header title="Bilgiler" />
       <ScrollView contentContainerStyle={styles.scrollContainer} showsVerticalScrollIndicator={false}>
-        <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Bitkiniz İçin Öneriler</Text>
-          <Text style={styles.infoText}>
-            {userPlant.name} bitkiniz için ideal sıcaklık: {userPlant.temperature}, nem: {userPlant.humidity}, ışık: {userPlant.light}.
-          </Text>
-          <Text style={styles.infoText}>Bitki Türü: {plantType || "Henüz belirlenmedi"}</Text>
-          <TouchableOpacity style={styles.button} onPress={fetchSuggestions}>
-            <Text style={styles.buttonText}>Bitkiniz Hakkında Daha Fazla Öneri Görün</Text>
-          </TouchableOpacity>
+        <View style={styles.cardContainer}>
+          <Text style={styles.cardTitle}>Bitkiniz İçin Öneriler</Text>
+          <Text style={styles.cardDesc}>Bitkinizin son <Text style={{fontWeight:'bold', color:'#2C5E1A'}}>1 gündeki verilerini</Text> inceleyin.</Text>
+          <View style={styles.iconRow}>
+            <View style={styles.iconCol}><Text style={styles.icon}>🌡️</Text><Text style={styles.iconLabel}>Sıcaklık</Text></View>
+            <View style={styles.iconCol}><Text style={styles.icon}>💧</Text><Text style={styles.iconLabel}>Toprak Nem</Text></View>
+            <View style={styles.iconCol}><Text style={styles.icon}>🟩</Text><Text style={styles.iconLabel}>CO₂</Text></View>
+            <View style={styles.iconCol}><Text style={styles.icon}>💡</Text><Text style={styles.iconLabel}>Işık</Text></View>
+            <View style={styles.iconCol}><Text style={styles.icon}>🌫️</Text><Text style={styles.iconLabel}>Nem</Text></View>
+          </View>
+          <View style={{flexDirection:'row', justifyContent:'space-between', marginTop:18}}>
+            <TouchableOpacity style={[styles.cardButton, { backgroundColor: '#36A2EB' }]} onPress={() => navigation.navigate('BitkiVeriGrafikScreen')}>
+              <Text style={styles.cardButtonText}>Verileri İncele</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.cardButton} onPress={fetchSuggestions}>
+              <Text style={styles.cardButtonText}>AI Önerileri</Text>
+            </TouchableOpacity>
+          </View>
+          <View style={styles.plantTypeBox}>
+            <Text style={styles.plantTypeLabel}>Bitki Türü</Text>
+            <Text style={styles.plantTypeValue}>{plantType || 'Henüz belirlenmedi'}</Text>
+          </View>
         </View>
 
         <View style={styles.sectionContainer}>
@@ -196,6 +209,83 @@ export default function BilgilerScreen({ navigation }) {
 const styles = StyleSheet.create({
   safeContainer: { flex: 1, backgroundColor: "#f2f8f3" },
   scrollContainer: { flexGrow: 1, padding: 20 },
+  // Modern kart tasarımı
+  cardContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 18,
+    padding: 22,
+    marginBottom: 22,
+    shadowColor: '#2C5E1A',
+    shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.13,
+    shadowRadius: 16,
+    elevation: 6,
+    alignItems: 'center',
+  },
+  cardTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#2C5E1A',
+    marginBottom: 12,
+    alignSelf: 'flex-start',
+  },
+  cardDesc: {
+    fontSize: 16,
+    color: '#333',
+    marginBottom: 16,
+    alignSelf: 'flex-start',
+  },
+  iconRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    width: '100%',
+    marginBottom: 12,
+  },
+  iconCol: {
+    alignItems: 'center',
+    flex: 1,
+  },
+  icon: {
+    fontSize: 32,
+    marginBottom: 2,
+  },
+  iconLabel: {
+    fontSize: 12,
+    color: '#666',
+  },
+  cardButton: {
+    flex: 1,
+    backgroundColor: '#4CAF50',
+    paddingVertical: 10,
+    marginHorizontal: 5,
+    borderRadius: 8,
+    alignItems: 'center',
+    elevation: 2,
+  },
+  cardButtonText: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: 'bold',
+  },
+  plantTypeBox: {
+    marginTop: 16,
+    backgroundColor: '#f2f8f3',
+    borderRadius: 8,
+    padding: 10,
+    width: '100%',
+    alignItems: 'center',
+  },
+  plantTypeLabel: {
+    fontSize: 13,
+    color: '#2C5E1A',
+    fontWeight: '600',
+  },
+  plantTypeValue: {
+    fontSize: 16,
+    color: '#36A2EB',
+    fontWeight: 'bold',
+    marginTop: 2,
+  },
   sectionContainer: { backgroundColor: "#fff", padding: 15, borderRadius: 10, marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", color: "#2C5E1A", marginBottom: 10 },
   button: { backgroundColor: "#4CAF50", padding: 10, borderRadius: 5, alignItems: "center", marginTop: 10 },

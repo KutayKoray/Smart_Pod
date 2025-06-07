@@ -35,4 +35,6 @@ class EmailRequest(BaseModel):
 class SuggestionRequest(BaseModel):
     email: str
 
+class DeviceDataRequest(BaseModel):
+    device_id: int
 

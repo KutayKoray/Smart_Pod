@@ -1,4 +1,4 @@
-from fastapi import FastAPI, File, UploadFile, Depends, HTTPException
+from fastapi import FastAPI, File, UploadFile, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 import paho.mqtt.client as mqtt
 from database import SessionLocal, engine
@@ -11,9 +11,10 @@ import json
 from model_predict import make_prediction, save_file
 from config import Config
 from auth import register_user, login_user, get_user_profile
-from schemas import RegisterRequest, LoginRequest, EmailRequest, SuggestionRequest
+from schemas import RegisterRequest, LoginRequest, EmailRequest, SuggestionRequest, DeviceDataRequest
 from suggestions import generate_suggestions
 from models import User
+from datetime import datetime, timedelta
 
 
 models.Base.metadata.create_all(bind=engine)
@@ -154,6 +155,65 @@ async def generate_suggestions_endpoint(payload: SuggestionRequest):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         db.close()
+        
+@app.post("/plant-data")
+async def get_plant_data_post(payload: DeviceDataRequest, db: Session = Depends(get_db)):
+    end_time = datetime.utcnow()
+    start_time = end_time - timedelta(days=1)
+
+    device = db.query(models.Device).filter(models.Device.device_id == payload.device_id).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Cihaz bulunamadı")
+
+    datas = (
+        db.query(models.SensorData)
+        .filter(models.SensorData.device_id == payload.device_id)
+        .filter(models.SensorData.timestamp >= start_time)
+        .order_by(models.SensorData.timestamp.asc())
+        .all()
+    )
+
+    if not datas:
+        return {
+            "saatler": [],
+            "sicaklik": [],
+            "nem": [],
+            "toprakNem": [],
+            "isik": [],
+            "co2": []
+        }
+
+    saatler = [d.timestamp.strftime("%H:%M") for d in datas]
+    sicaklik = [float(d.temperature or 0) for d in datas]
+    nem = [float(d.humidity or 0) for d in datas]
+    toprakNem = [float(d.soil_humidity or 0) for d in datas]
+    isik = [float(d.light or 0) for d in datas]
+    co2 = [int(d.co2 or 0) for d in datas]
+
+    return {
+        "saatler": saatler,
+        "sicaklik": sicaklik,
+        "nem": nem,
+        "toprakNem": toprakNem,
+        "isik": isik,
+        "co2": co2
+    }
+    
+    
+@app.post("/get-device-id")
+async def get_device_id(payload: EmailRequest, db: Session = Depends(get_db)):
+    user = db.query(models.User).filter(models.User.email == payload.email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Kullanıcı bulunamadı")
+
+    if not user.serial:
+        raise HTTPException(status_code=400, detail="Kullanıcıya ait cihaz seri numarası bulunamadı")
+
+    device = db.query(models.Device).filter(models.Device.serial_number == user.serial).first()
+    if not device:
+        raise HTTPException(status_code=404, detail="Cihaza ait kayıt bulunamadı")
+
+    return { "device_id": device.device_id }
 
     
 if __name__ == "__main__":

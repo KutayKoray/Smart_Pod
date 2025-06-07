@@ -6,6 +6,7 @@ import Landing3 from './Landing3';
 import RegisterScreen from './Auth/RegisterScreen';
 import LoginScreen from './Auth/LoginScreen';
 import BottomTabNavigator from './BottomTabNavigator';
+import BitkiVeriGrafikScreen from './BitkiVeriGrafikScreen';
 
 const Stack = createStackNavigator();
 
@@ -17,7 +18,8 @@ export default function AuthStack() {
       <Stack.Screen name="Landing3" component={Landing3} />
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
-      <Stack.Screen name="MainTabs" component={BottomTabNavigator} />
+      <Stack.Screen name="MainTabs" component={BottomTabNavigator} options={{ headerShown: false }} />
+      <Stack.Screen name="BitkiVeriGrafikScreen" component={BitkiVeriGrafikScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

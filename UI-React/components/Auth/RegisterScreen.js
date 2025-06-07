@@ -17,6 +17,8 @@ export default function RegisterScreen({ navigation }) {
         body: JSON.stringify({ name, email, password, serial }),
       });
       if (response.ok) {
+        // Seri numarasını pot session'a kaydet
+        await savePotSession({ serial });
         Alert.alert('Başarılı', 'Kayıt başarılı! Giriş yapabilirsiniz.');
         navigation.navigate('Login');
       } else {
